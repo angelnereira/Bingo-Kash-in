@@ -2,14 +2,18 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { SessionStatus } from '@prisma/client'
+import { SessionStatus, SessionTier } from '@prisma/client'
 import { z } from 'zod'
+import { getTierByPrice, validateTierPrice, DEFAULT_BULK_DISCOUNTS } from '@/lib/pricing-utils'
 
 const createSessionSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
   description: z.string().optional(),
   scheduledAt: z.string().datetime(),
-  cardPrice: z.number().positive('El precio debe ser mayor a 0'),
+  cardPrice: z.number().min(0.5).max(10, 'El precio debe estar entre $0.50 y $10.00'),
+  tier: z.enum(['CASUAL', 'STANDARD', 'PREMIUM', 'VIP']).optional(),
+  useBulkDiscounts: z.boolean().default(true),
+  customBulkDiscounts: z.record(z.string(), z.number()).optional(),
   maxCards: z.number().int().positive().default(1000),
   maxCardsPerPlayer: z.number().int().positive().default(10),
   hostCommission: z.number().min(0).max(50, 'La comisión debe ser entre 0 y 50%'),
@@ -95,6 +99,23 @@ export async function POST(request: Request) {
     const body = await request.json()
     const data = createSessionSchema.parse(body)
 
+    // Determinar el tier basado en el precio o usar el especificado
+    const tier: SessionTier = data.tier || getTierByPrice(data.cardPrice)
+
+    // Validar que el precio esté dentro del rango del tier
+    if (!validateTierPrice(tier, data.cardPrice)) {
+      return NextResponse.json(
+        { error: `El precio $${data.cardPrice} no es válido para el tier ${tier}` },
+        { status: 400 }
+      )
+    }
+
+    // Configurar descuentos por paquetes
+    let bulkDiscounts = null
+    if (data.useBulkDiscounts) {
+      bulkDiscounts = data.customBulkDiscounts || DEFAULT_BULK_DISCOUNTS[tier]
+    }
+
     // Validar que la suma de porcentajes de premios no exceda 100%
     const totalPrizePercentage = data.rounds.reduce((sum, r) => sum + r.prizePercentage, 0)
     if (totalPrizePercentage > 100) {
@@ -114,7 +135,9 @@ export async function POST(request: Request) {
         title: data.title,
         description: data.description,
         scheduledAt: new Date(data.scheduledAt),
+        tier,
         cardPrice: data.cardPrice,
+        bulkDiscounts,
         maxCards: data.maxCards,
         maxCardsPerPlayer: data.maxCardsPerPlayer,
         hostCommission: data.hostCommission,

@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateBingoCard } from '@/lib/bingo-utils'
 import { createTransaction, getUserBalance } from '@/lib/wallet-utils'
+import { calculateBulkPrice } from '@/lib/pricing-utils'
 import { TransactionType, PaymentMethod } from '@prisma/client'
 import { z } from 'zod'
 
@@ -77,8 +78,12 @@ export async function POST(
       )
     }
 
-    // Calcular costo total
-    const totalCost = session.cardPrice.toNumber() * numberOfCards
+    // Calcular costo con descuentos por paquetes
+    const basePrice = session.cardPrice.toNumber()
+    const bulkDiscounts = session.bulkDiscounts as Record<string, number> | null
+
+    const pricing = calculateBulkPrice(basePrice, numberOfCards, bulkDiscounts || undefined)
+    const totalCost = pricing.finalPrice
 
     // Verificar balance
     const balance = await getUserBalance(authSession.user.id)
@@ -97,10 +102,13 @@ export async function POST(
         type: TransactionType.CARD_PURCHASE,
         amount: totalCost,
         paymentMethod: PaymentMethod.WALLET,
-        description: `Compra de ${numberOfCards} cartón(es) para sesión ${session.title}`,
+        description: `Compra de ${numberOfCards} cartón(es) para sesión ${session.title}${pricing.savingsText ? ` - ${pricing.savingsText}` : ''}`,
         metadata: {
           sessionId: params.id,
           numberOfCards,
+          originalPrice: pricing.originalPrice,
+          discount: pricing.discountAmount,
+          discountPercentage: pricing.discountPercentage,
         },
       })
 
@@ -148,7 +156,8 @@ export async function POST(
 
     return NextResponse.json({
       ...result,
-      message: `${numberOfCards} cartón(es) comprado(s) exitosamente`,
+      pricing,
+      message: `${numberOfCards} cartón(es) comprado(s) exitosamente${pricing.savingsText ? ` - ${pricing.savingsText}` : ''}`,
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

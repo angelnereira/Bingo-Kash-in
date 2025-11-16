@@ -56,6 +56,13 @@ enum GamePattern {
   BLACKOUT
 }
 
+enum SessionTier {
+  CASUAL      // $0.50 - $1.99 - Partidas casuales, bajo riesgo
+  STANDARD    // $2.00 - $4.99 - El tier más popular
+  PREMIUM     // $5.00 - $7.99 - Mayor premio potencial
+  VIP         // $8.00 - $10.00 - Premios grandes, alto riesgo
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -131,10 +138,15 @@ model BingoSession {
   endedAt           DateTime?
   status            SessionStatus @default(SCHEDULED)
 
-  // Pricing
+  // Pricing & Tier
+  tier              SessionTier   @default(STANDARD)
   cardPrice         Decimal       @db.Decimal(10, 2)
   maxCards          Int           @default(1000)
   maxCardsPerPlayer Int           @default(10)
+
+  // Descuentos por paquetes (JSON)
+  // Ejemplo: {"3": 5, "5": 10, "10": 20} = 3 cartones = 5% desc, 5 = 10% desc, etc.
+  bulkDiscounts     Json?
 
   // Commissions
   hostCommission    Decimal       @db.Decimal(5, 2) // Percentage
@@ -161,6 +173,7 @@ model BingoSession {
   @@index([hostId])
   @@index([status])
   @@index([scheduledAt])
+  @@index([tier])
 }
 
 model GameRound {

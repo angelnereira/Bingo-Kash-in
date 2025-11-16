@@ -28,6 +28,34 @@
 - 📈 **Escalable**: Arquitectura preparada para miles de usuarios
 - 🛡️ **Juego Justo**: Verificación automática de ganadores
 
+## 💰 Sistema de Precios Flexible
+
+Kash-in implementa un sistema de precios de 4 tiers optimizado para maximizar conversiones:
+
+### Tiers de Precios
+
+| Tier | Rango | Precio Popular | Descuentos | Público |
+|------|-------|----------------|------------|---------|
+| 🎲 **CASUAL** | $0.50 - $1.99 | $0.99 | Hasta 25% | Principiantes |
+| ⭐ **STANDARD** | $2.00 - $4.99 | $2.99 | Hasta 20% | Jugadores regulares |
+| 💎 **PREMIUM** | $5.00 - $7.99 | $5.99 | Hasta 15% | Experimentados |
+| 👑 **VIP** | $8.00 - $10.00 | $9.99 | Hasta 12% | High rollers |
+
+### Descuentos por Paquetes
+
+Compra más cartones y ahorra automáticamente:
+
+- **3 cartones**: 5-10% de descuento
+- **5 cartones**: 10-15% de descuento
+- **10 cartones**: 15-25% de descuento
+
+**Ejemplo:** En tier STANDARD ($2.99):
+- 1 cartón: $2.99
+- 5 cartones: $13.16 (en lugar de $14.95) - Ahorra $1.79 (12%)
+- 10 cartones: $23.92 (en lugar de $29.90) - Ahorra $5.98 (20%)
+
+Ver [PRICING_GUIDE.md](./PRICING_GUIDE.md) para estrategias detalladas.
+
 ## 🏗️ Arquitectura Técnica
 
 ### Stack Tecnológico
