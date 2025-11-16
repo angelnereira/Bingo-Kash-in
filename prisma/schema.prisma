@@ -1,0 +1,255 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PLAYER
+  HOST
+  ADMIN
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  CARD_PURCHASE
+  PRIZE_WIN
+  HOST_COMMISSION
+  PLATFORM_FEE
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  YAPPY
+  CREDIT_CARD
+  WALLET
+}
+
+enum SessionStatus {
+  SCHEDULED
+  WAITING
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum GamePattern {
+  LINE
+  TWO_LINES
+  FOUR_CORNERS
+  FULL_CARD
+  X_PATTERN
+  BLACKOUT
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String?   @unique
+  password      String
+  name          String?
+  role          UserRole  @default(PLAYER)
+  isVerified    Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  wallet        Wallet?
+  hostedSessions BingoSession[] @relation("HostedSessions")
+  participatedSessions SessionParticipant[]
+  transactions  Transaction[]
+  cards         BingoCard[]
+  chatMessages  ChatMessage[]
+  followers     Follow[] @relation("Following")
+  following     Follow[] @relation("Followers")
+
+  @@index([email])
+  @@index([username])
+}
+
+model Wallet {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  balance       Decimal   @default(0) @db.Decimal(10, 2)
+  lockedBalance Decimal   @default(0) @db.Decimal(10, 2) // Balance locked in active games
+  totalDeposits Decimal   @default(0) @db.Decimal(10, 2)
+  totalWithdrawals Decimal @default(0) @db.Decimal(10, 2)
+  totalWinnings Decimal   @default(0) @db.Decimal(10, 2)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Transaction {
+  id            String            @id @default(cuid())
+  userId        String
+  type          TransactionType
+  status        TransactionStatus @default(PENDING)
+  amount        Decimal           @db.Decimal(10, 2)
+  fee           Decimal           @default(0) @db.Decimal(10, 2)
+  netAmount     Decimal           @db.Decimal(10, 2) // amount - fee
+  paymentMethod PaymentMethod?
+  reference     String?           // External payment reference (Stripe, Yappy)
+  description   String?
+  metadata      Json?             // Additional data (session info, card info, etc.)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model BingoSession {
+  id                String        @id @default(cuid())
+  hostId            String
+  title             String
+  description       String?
+  scheduledAt       DateTime
+  startedAt         DateTime?
+  endedAt           DateTime?
+  status            SessionStatus @default(SCHEDULED)
+
+  // Pricing
+  cardPrice         Decimal       @db.Decimal(10, 2)
+  maxCards          Int           @default(1000)
+  maxCardsPerPlayer Int           @default(10)
+
+  // Commissions
+  hostCommission    Decimal       @db.Decimal(5, 2) // Percentage
+  platformFee       Decimal       @db.Decimal(5, 2) // Percentage
+
+  // Game state
+  calledNumbers     Int[]         @default([])
+  currentRound      Int           @default(0)
+
+  // Agora voice streaming
+  agoraChannelName  String?
+  agoraToken        String?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relations
+  host              User          @relation("HostedSessions", fields: [hostId], references: [id])
+  rounds            GameRound[]
+  participants      SessionParticipant[]
+  cards             BingoCard[]
+  chatMessages      ChatMessage[]
+
+  @@index([hostId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model GameRound {
+  id              String      @id @default(cuid())
+  sessionId       String
+  roundNumber     Int
+  pattern         GamePattern
+  prizePercentage Decimal     @db.Decimal(5, 2) // Percentage of total pot
+  prizeAmount     Decimal?    @db.Decimal(10, 2) // Calculated when round starts
+  isCompleted     Boolean     @default(false)
+  winnerId        String?
+  winningCardId   String?
+  completedAt     DateTime?
+
+  session         BingoSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, roundNumber])
+  @@index([sessionId])
+}
+
+model SessionParticipant {
+  id          String       @id @default(cuid())
+  sessionId   String
+  userId      String
+  joinedAt    DateTime     @default(now())
+  cardsPurchased Int       @default(0)
+  totalSpent  Decimal      @default(0) @db.Decimal(10, 2)
+  totalWon    Decimal      @default(0) @db.Decimal(10, 2)
+
+  session     BingoSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([sessionId])
+  @@index([userId])
+}
+
+model BingoCard {
+  id          String       @id @default(cuid())
+  sessionId   String
+  userId      String
+  cardNumber  Int          // Sequential number for the session
+  numbers     Int[]        // 25 numbers for a 5x5 bingo card
+  markedCells Int[]        @default([]) // Indices of marked cells
+  isWinner    Boolean      @default(false)
+  wonPattern  GamePattern?
+  wonAt       DateTime?
+  createdAt   DateTime     @default(now())
+
+  session     BingoSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, cardNumber])
+  @@index([sessionId])
+  @@index([userId])
+}
+
+model ChatMessage {
+  id          String       @id @default(cuid())
+  sessionId   String
+  userId      String
+  message     String
+  isSystemMessage Boolean  @default(false)
+  createdAt   DateTime     @default(now())
+
+  session     BingoSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower    User     @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}

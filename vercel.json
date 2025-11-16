@@ -1,0 +1,16 @@
+{
+  "buildCommand": "prisma generate && next build",
+  "rewrites": [
+    {
+      "source": "/socket.io/(.*)",
+      "destination": "/api/socket"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "@database-url",
+    "NEXTAUTH_SECRET": "@nextauth-secret",
+    "STRIPE_SECRET_KEY": "@stripe-secret-key",
+    "YAPPY_API_KEY": "@yappy-api-key",
+    "AGORA_APP_ID": "@agora-app-id"
+  }
+}
