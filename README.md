@@ -1,7 +1,5 @@
 # Kash-in - Plataforma de Bingo Interactivo en Vivo
 
-![Kash-in Banner](https://via.placeholder.com/1200x300/0ea5e9/ffffff?text=Kash-in+-+Bingo+en+Vivo)
-
 ## 🎯 Descripción
 
 **Kash-in** es la plataforma líder de bingo social en vivo donde cualquier persona puede ser anfitrión de su propia noche de bingo. La aplicación se centra en la facilidad de uso, la interacción en tiempo real (voz del anfitrión) y un sistema de billetera "en-app" seguro con capacidades de monetización real.
