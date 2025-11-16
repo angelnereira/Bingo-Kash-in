@@ -298,7 +298,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 👥 Autores
 
-- **Tu Nombre** - *Trabajo Inicial* - [tuusuario](https://github.com/tuusuario)
+- **Angel Nereira** - *Trabajo Inicial* - angelnereira(https://github.com/angelnereira)
 
 ## 📞 Contacto
 
