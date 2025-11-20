@@ -54,6 +54,38 @@ Compra más cartones y ahorra automáticamente:
 
 Ver [PRICING_GUIDE.md](./PRICING_GUIDE.md) para estrategias detalladas.
 
+## 🎮 Nuevas Características Implementadas
+
+Kash-in ahora incluye un **sistema completo de engagement y retención**:
+
+### 🎁 Promociones y Descuentos
+- **Happy Hours**: Descuentos automáticos en horarios específicos
+- **Combos Especiales**: Cartones bonus al comprar paquetes
+- **Promociones Estacionales**: Eventos especiales con descuentos
+
+### 🏅 Sistema de Recompensas
+- **Programa de Lealtad**: Gana puntos por cada compra y canjéalos por recompensas
+- **Sistema de Referidos**: Invita amigos y ambos reciben bonus ($5 + $3)
+- **Bonus de Bienvenida**: Nuevos usuarios reciben crédito inicial
+
+### 🎮 Gamificación Completa
+- **Sistema de Niveles**: Sube de nivel ganando XP en cada partida
+- **100+ Logros**: Desbloquea logros jugando y ganando
+- **Badges Coleccionables**: Obtén badges únicos por hitos especiales
+- **Perfil de Jugador**: Muestra tu progreso y estadísticas
+
+### 🏆 Competencias
+- **Leaderboards**: Rankings semanales, mensuales y de todos los tiempos
+- **Desafíos**: Completa desafíos diarios, semanales y mensuales
+- **Torneos Programados**: Compite por premios grandes en torneos oficiales
+
+### 🎉 Eventos Especiales
+- **Eventos Temáticos**: Año Nuevo, San Valentín, Halloween, Navidad con premios multiplicados
+- **Jackpots Progresivos**: Pool de premios acumulativos que crece con cada juego
+- **Sesiones VIP**: Partidas exclusivas con premios premium
+
+Ver [FEATURES_GUIDE.md](./FEATURES_GUIDE.md) para documentación completa de todas las características.
+
 ## 🏗️ Arquitectura Técnica
 
 ### Stack Tecnológico
@@ -273,13 +305,21 @@ npm start
 - [x] Billetera digital
 - [x] Sesiones de bingo
 - [x] Socket.io para tiempo real
+- [x] **Sistema de precios flexible (4 tiers + descuentos)**
+- [x] **Happy Hours y promociones automáticas**
+- [x] **Programa de lealtad con puntos**
+- [x] **Sistema de referidos**
+- [x] **Gamificación completa (niveles, logros, badges)**
+- [x] **Leaderboards y rankings**
+- [x] **Desafíos diarios/semanales/mensuales**
+- [x] **Sistema de torneos programados**
+- [x] **Eventos temáticos estacionales**
+- [x] **Jackpots progresivos**
 - [ ] Integración completa con Yappy
 - [ ] Integración completa con Agora
 - [ ] App móvil (React Native)
-- [ ] Sistema de torneos
-- [ ] Programa de afiliados
-- [ ] Panel de administración
-- [ ] Analytics y reportes
+- [ ] Panel de administración completo
+- [ ] Analytics y reportes avanzados
 - [ ] Notificaciones push
 
 ## 🤝 Contribuir
