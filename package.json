@@ -5,19 +5,19 @@
   "private": true,
   "scripts": {
     "dev": "node server.js",
-    "build": "prisma generate --no-engine && next build",
+    "build": "prisma generate && next build",
     "start": "node server.js",
     "lint": "next lint",
-    "prisma:generate": "prisma generate --no-engine",
+    "prisma:generate": "prisma generate",
     "prisma:generate:dev": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
     "prisma:deploy": "prisma migrate deploy",
-    "postinstall": "prisma generate --no-engine"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^7.0.0",
-    "@prisma/extension-accelerate": "^2.0.2",
+    "@prisma/client": "^5.22.0",
+    "@prisma/extension-accelerate": "^1.2.1",
     "bcryptjs": "^2.4.3",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.379.0",
