@@ -37,10 +37,16 @@ Tu aplicación Kash-in está **completamente configurada** y lista para deployme
 - ✅ Sesiones VIP
 
 ### ⚡ Prisma Accelerate
-- ✅ Cliente optimizado para serverless/edge
-- ✅ Caché inteligente configurado
+- ✅ Cliente optimizado con Prisma 5.22.0
+- ✅ Extensión Accelerate 1.2.1 instalada
 - ✅ Connection pooling automático
-- ✅ Queries hasta 1000x más rápidas
+- ✅ Caché de queries configurado
+
+---
+
+## ⚠️ IMPORTANTE: Ejecuta estos comandos desde TU COMPUTADORA LOCAL
+
+Los siguientes pasos **DEBEN ejecutarse desde tu máquina local** con conexión a internet, ya que requieren acceso directo a la base de datos en `db.prisma.io:5432`.
 
 ---
 
@@ -65,9 +71,10 @@ npm install
 ```
 
 Esto instalará automáticamente:
-- @prisma/client@7.0.0
-- @prisma/extension-accelerate@2.0.2
+- @prisma/client@5.22.0
+- @prisma/extension-accelerate@1.2.1
 - Todas las demás dependencias
+- Generará Prisma Client automáticamente
 
 ### 3. Configurar Variables de Entorno
 
