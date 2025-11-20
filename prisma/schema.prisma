@@ -63,6 +63,44 @@ enum SessionTier {
   VIP         // $8.00 - $10.00 - Premios grandes, alto riesgo
 }
 
+enum PromotionType {
+  HAPPY_HOUR
+  COMBO_SPECIAL
+  WELCOME_BONUS
+  SEASONAL
+  CUSTOM
+}
+
+enum AchievementCategory {
+  GAMES_PLAYED
+  WINS
+  SPENDING
+  SOCIAL
+  SPECIAL
+}
+
+enum ChallengeType {
+  WEEKLY
+  DAILY
+  MONTHLY
+  SPECIAL
+}
+
+enum ChallengeStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+  CLAIMED
+}
+
+enum TournamentStatus {
+  UPCOMING
+  REGISTRATION_OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -75,6 +113,16 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Gamification
+  level         Int       @default(1)
+  experiencePoints Int    @default(0)
+  loyaltyPoints Int       @default(0)
+  hasClaimedWelcomeBonus Boolean @default(false)
+
+  // Referral
+  referralCode  String?   @unique
+  referredById  String?
+
   // Relations
   wallet        Wallet?
   hostedSessions BingoSession[] @relation("HostedSessions")
@@ -85,8 +133,19 @@ model User {
   followers     Follow[] @relation("Following")
   following     Follow[] @relation("Followers")
 
+  // New Relations
+  referredBy    User?     @relation("Referrals", fields: [referredById], references: [id])
+  referrals     User[]    @relation("Referrals")
+  achievements  UserAchievement[]
+  badges        UserBadge[]
+  challenges    UserChallenge[]
+  leaderboardEntries LeaderboardEntry[]
+  tournamentParticipations TournamentParticipant[]
+
   @@index([email])
   @@index([username])
+  @@index([referralCode])
+  @@index([level])
 }
 
 model Wallet {
@@ -160,6 +219,12 @@ model BingoSession {
   agoraChannelName  String?
   agoraToken        String?
 
+  // Special Features
+  isVipSession      Boolean       @default(false)
+  thematicEventId   String?
+  tournamentId      String?
+  jackpotId         String?
+
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
@@ -169,11 +234,17 @@ model BingoSession {
   participants      SessionParticipant[]
   cards             BingoCard[]
   chatMessages      ChatMessage[]
+  thematicEvent     ThematicEvent? @relation(fields: [thematicEventId], references: [id])
+  tournament        Tournament?   @relation(fields: [tournamentId], references: [id])
+  jackpot           Jackpot?      @relation(fields: [jackpotId], references: [id])
 
   @@index([hostId])
   @@index([status])
   @@index([scheduledAt])
   @@index([tier])
+  @@index([isVipSession])
+  @@index([thematicEventId])
+  @@index([tournamentId])
 }
 
 model GameRound {
@@ -265,4 +336,371 @@ model SystemConfig {
   key       String   @unique
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// PROMOCIONES Y PRECIOS
+// ============================================
+
+model Promotion {
+  id            String        @id @default(cuid())
+  type          PromotionType
+  title         String
+  description   String?
+  isActive      Boolean       @default(true)
+
+  // Discount settings
+  discountPercentage Decimal? @db.Decimal(5, 2)
+  discountAmount     Decimal? @db.Decimal(10, 2)
+
+  // Happy Hour specific
+  startTime     DateTime?     // Hora de inicio (solo hora del día)
+  endTime       DateTime?     // Hora de fin (solo hora del día)
+  daysOfWeek    Int[]         @default([]) // 0=Domingo, 1=Lunes, etc.
+
+  // Combo Special specific
+  minCards      Int?          // Mínimo de cartones para combo
+  bonusCards    Int?          // Cartones bonus gratis
+
+  // General settings
+  validFrom     DateTime?
+  validUntil    DateTime?
+  maxUses       Int?          // Máximo de usos totales
+  usesCount     Int           @default(0)
+  maxUsesPerUser Int?         // Máximo por usuario
+
+  // Tier restrictions
+  applicableTiers SessionTier[]
+
+  // Metadata
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([type])
+  @@index([isActive])
+  @@index([validFrom, validUntil])
+}
+
+model LoyaltyReward {
+  id            String   @id @default(cuid())
+  pointsRequired Int
+  rewardType    String   // "DISCOUNT", "FREE_CARDS", "BONUS_CASH"
+  rewardValue   Decimal  @db.Decimal(10, 2)
+  title         String
+  description   String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([pointsRequired])
+  @@index([isActive])
+}
+
+model ReferralReward {
+  id            String   @id @default(cuid())
+  referrerId    String
+  referredId    String
+  rewardAmount  Decimal  @db.Decimal(10, 2)
+  referrerReward Decimal @db.Decimal(10, 2)
+  isPaid        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([referrerId])
+  @@index([referredId])
+  @@index([isPaid])
+}
+
+// ============================================
+// GAMIFICACIÓN
+// ============================================
+
+model Achievement {
+  id            String              @id @default(cuid())
+  key           String              @unique // "first_win", "10_games_played", etc.
+  title         String
+  description   String
+  category      AchievementCategory
+  iconUrl       String?
+
+  // Requirements
+  requirement   Json                // Flexible requirement structure
+  rewardXP      Int                 @default(0)
+  rewardPoints  Int                 @default(0)
+
+  isActive      Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+
+  // Relations
+  userAchievements UserAchievement[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  progress      Int         @default(0) // Para logros con progreso (ej: 7/10 juegos)
+  isCompleted   Boolean     @default(false)
+  completedAt   DateTime?
+  createdAt     DateTime    @default(now())
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId])
+  @@index([isCompleted])
+}
+
+model Badge {
+  id          String      @id @default(cuid())
+  key         String      @unique
+  title       String
+  description String
+  iconUrl     String?
+  rarity      String      @default("COMMON") // COMMON, RARE, EPIC, LEGENDARY
+
+  // Requirements (could be achievement-based, special events, etc.)
+  requirement Json?
+
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+
+  // Relations
+  userBadges  UserBadge[]
+
+  @@index([rarity])
+  @@index([isActive])
+}
+
+model UserBadge {
+  id          String   @id @default(cuid())
+  userId      String
+  badgeId     String
+  earnedAt    DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge       Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+}
+
+model Challenge {
+  id            String        @id @default(cuid())
+  type          ChallengeType
+  title         String
+  description   String
+
+  // Requirements
+  requirement   Json          // Flexible structure: {type: "play_games", count: 5}
+
+  // Rewards
+  rewardXP      Int           @default(0)
+  rewardPoints  Int           @default(0)
+  rewardCash    Decimal?      @db.Decimal(10, 2)
+
+  // Timing
+  startDate     DateTime
+  endDate       DateTime
+
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  userChallenges UserChallenge[]
+
+  @@index([type])
+  @@index([isActive])
+  @@index([startDate, endDate])
+}
+
+model UserChallenge {
+  id          String          @id @default(cuid())
+  userId      String
+  challengeId String
+  progress    Int             @default(0)
+  status      ChallengeStatus @default(ACTIVE)
+  completedAt DateTime?
+  claimedAt   DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge   Challenge       @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeId])
+  @@index([userId])
+  @@index([challengeId])
+  @@index([status])
+}
+
+model Leaderboard {
+  id          String             @id @default(cuid())
+  key         String             @unique // "weekly_wins", "monthly_earnings", etc.
+  title       String
+  description String?
+  period      String             // "WEEKLY", "MONTHLY", "ALL_TIME"
+  metric      String             // "wins", "earnings", "games_played"
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  // Relations
+  entries     LeaderboardEntry[]
+
+  @@index([key])
+  @@index([isActive])
+  @@index([period])
+}
+
+model LeaderboardEntry {
+  id            String      @id @default(cuid())
+  leaderboardId String
+  userId        String
+  rank          Int
+  score         Decimal     @db.Decimal(10, 2)
+  metadata      Json?       // Additional stats
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  leaderboard   Leaderboard @relation(fields: [leaderboardId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([leaderboardId, userId])
+  @@index([leaderboardId])
+  @@index([userId])
+  @@index([rank])
+}
+
+// ============================================
+// EVENTOS ESPECIALES
+// ============================================
+
+model Tournament {
+  id              String              @id @default(cuid())
+  title           String
+  description     String?
+  status          TournamentStatus    @default(UPCOMING)
+
+  // Entry
+  entryFee        Decimal             @db.Decimal(10, 2)
+  maxParticipants Int?
+  minParticipants Int                 @default(2)
+
+  // Prize Pool
+  prizePool       Decimal             @db.Decimal(10, 2)
+  prizeDistribution Json              // {"1": 50, "2": 30, "3": 20} percentages
+
+  // Timing
+  registrationStart DateTime
+  registrationEnd   DateTime
+  startDate         DateTime
+  endDate           DateTime
+
+  // Settings
+  tier            SessionTier
+  rules           Json?
+  bannerUrl       String?
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  // Relations
+  participants    TournamentParticipant[]
+  sessions        BingoSession[]
+
+  @@index([status])
+  @@index([startDate])
+  @@index([tier])
+}
+
+model TournamentParticipant {
+  id            String     @id @default(cuid())
+  tournamentId  String
+  userId        String
+  rank          Int?
+  score         Decimal    @default(0) @db.Decimal(10, 2)
+  prizeWon      Decimal?   @db.Decimal(10, 2)
+  isPaid        Boolean    @default(false)
+  joinedAt      DateTime   @default(now())
+
+  tournament    Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, userId])
+  @@index([tournamentId])
+  @@index([userId])
+  @@index([rank])
+}
+
+model ThematicEvent {
+  id          String         @id @default(cuid())
+  key         String         @unique // "christmas_2024", "new_year_2025"
+  title       String
+  description String?
+  theme       String         // "CHRISTMAS", "NEW_YEAR", "HALLOWEEN", etc.
+
+  // Visual
+  bannerUrl   String?
+  iconUrl     String?
+  colors      Json?          // Theme colors
+
+  // Timing
+  startDate   DateTime
+  endDate     DateTime
+
+  // Bonuses
+  bonusMultiplier Decimal?   @db.Decimal(5, 2) // 1.5x prizes, etc.
+  specialRewards  Json?
+
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relations
+  sessions    BingoSession[]
+
+  @@index([key])
+  @@index([isActive])
+  @@index([startDate, endDate])
+}
+
+model Jackpot {
+  id              String         @id @default(cuid())
+  title           String
+  description     String?
+  currentAmount   Decimal        @db.Decimal(10, 2)
+  seedAmount      Decimal        @db.Decimal(10, 2) // Initial amount
+  contributionRate Decimal       @db.Decimal(5, 2) // % of each card sale
+
+  // Winning conditions
+  winCondition    Json           // Flexible win conditions
+
+  // Winner
+  winnerId        String?
+  wonAt           DateTime?
+  wonAmount       Decimal?       @db.Decimal(10, 2)
+
+  // Timing
+  startDate       DateTime
+  endDate         DateTime?
+
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  sessions        BingoSession[]
+
+  @@index([isActive])
+  @@index([startDate])
 }
