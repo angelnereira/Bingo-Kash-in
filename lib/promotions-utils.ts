@@ -1,5 +1,5 @@
 import { PrismaClient, PromotionType, SessionTier } from '@prisma/client'
-import prisma from './prisma'
+import { prisma } from './prisma'
 
 /**
  * Verifica si una Happy Hour está activa en el momento actual

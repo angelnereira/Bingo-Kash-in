@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { SessionTier } from '@prisma/client'
 import { authOptions } from '@/lib/auth'
 import { getActivePromotions, createHappyHour, createComboSpecial } from '@/lib/promotions-utils'
 import { z } from 'zod'
@@ -60,7 +61,8 @@ export async function POST(req: NextRequest) {
         startTime: new Date(`1970-01-01T${validated.startTime}`),
         endTime: new Date(`1970-01-01T${validated.endTime}`),
         validFrom: validated.validFrom ? new Date(validated.validFrom) : undefined,
-        validUntil: validated.validUntil ? new Date(validated.validUntil) : undefined
+        validUntil: validated.validUntil ? new Date(validated.validUntil) : undefined,
+        applicableTiers: validated.applicableTiers ? validated.applicableTiers.map(t => t as SessionTier) : undefined
       })
     } else if (type === 'COMBO_SPECIAL') {
       const schema = z.object({
@@ -79,7 +81,8 @@ export async function POST(req: NextRequest) {
       promotion = await createComboSpecial({
         ...validated,
         validFrom: validated.validFrom ? new Date(validated.validFrom) : undefined,
-        validUntil: validated.validUntil ? new Date(validated.validUntil) : undefined
+        validUntil: validated.validUntil ? new Date(validated.validUntil) : undefined,
+        applicableTiers: validated.applicableTiers ? validated.applicableTiers.map(t => t as SessionTier) : undefined
       })
     } else {
       return NextResponse.json(

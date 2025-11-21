@@ -1,4 +1,4 @@
-import { getServerSession } from 'next/auth'
+import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
@@ -125,19 +125,18 @@ export default async function DashboardPage() {
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="font-bold text-lg text-gray-900">{session.title}</h3>
                     <span
-                      className={`px-2 py-1 rounded text-xs font-semibold ${
-                        session.status === 'IN_PROGRESS'
+                      className={`px-2 py-1 rounded text-xs font-semibold ${session.status === 'IN_PROGRESS'
                           ? 'bg-green-100 text-green-800'
                           : session.status === 'WAITING'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}
                     >
                       {session.status === 'IN_PROGRESS'
                         ? 'En Vivo'
                         : session.status === 'WAITING'
-                        ? 'Esperando'
-                        : 'Programada'}
+                          ? 'Esperando'
+                          : 'Programada'}
                     </span>
                   </div>
 
