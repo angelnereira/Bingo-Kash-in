@@ -5,8 +5,22 @@
   "private": true,
   "scripts": {
     "dev": "node server.js",
+<<<<<<< HEAD
     "build": "npx prisma generate && next build",
-    "start": "node server.js",
+{
+  "scripts": {
+    "dev": "node server.js",
+    "build": "prisma generate && next build",
+    "start": "next start",    <-- ESTA es la correcta
+    "start:local": "node server.js",
+    ...
+  }
+}    "start": "node server.js",
+=======
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "start:local": "node server.js",
+>>>>>>> 2915ca39f50c414c04245baa0910087a7427dff5
     "lint": "next lint",
     "prisma:generate": "prisma generate",
     "prisma:generate:dev": "prisma generate",
