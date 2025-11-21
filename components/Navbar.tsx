@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { useState } from 'react'
+import { ThemeToggle } from './ThemeToggle'
 
 export function Navbar() {
   const pathname = usePathname()
@@ -17,7 +18,7 @@ export function Navbar() {
   }
 
   return (
-    <nav className="bg-white shadow-lg">
+    <nav className="bg-white dark:bg-gray-900 shadow-lg transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo y nombre */}
@@ -35,8 +36,8 @@ export function Navbar() {
               href="/dashboard"
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 isActive('/dashboard')
-                  ? 'bg-primary-100 text-primary-700'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               Dashboard
@@ -46,8 +47,8 @@ export function Navbar() {
               href="/sessions"
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 isActive('/sessions')
-                  ? 'bg-primary-100 text-primary-700'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               Sesiones
@@ -58,8 +59,8 @@ export function Navbar() {
                 href="/host/create"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   isActive('/host/create')
-                    ? 'bg-accent-100 text-accent-700'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-accent-100 dark:bg-accent-900 text-accent-700 dark:text-accent-300'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
               >
                 Crear Sesión
@@ -70,8 +71,8 @@ export function Navbar() {
               href="/wallet"
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 isActive('/wallet')
-                  ? 'bg-primary-100 text-primary-700'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               Billetera
@@ -81,27 +82,32 @@ export function Navbar() {
               href="/history"
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 isActive('/history')
-                  ? 'bg-primary-100 text-primary-700'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               Historial
             </Link>
 
+            {/* Theme Toggle */}
+            <div className="ml-2">
+              <ThemeToggle />
+            </div>
+
             {/* User Menu */}
-            <div className="relative ml-4">
+            <div className="relative ml-2">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-accent-600 rounded-full flex items-center justify-center text-white font-bold">
                   {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
                 </div>
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {session?.user?.name || 'Usuario'}
                 </span>
                 <svg
-                  className={`w-4 h-4 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 transition-transform text-gray-700 dark:text-gray-300 ${isMenuOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -112,25 +118,25 @@ export function Navbar() {
 
               {/* Dropdown Menu */}
               {isMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10 border border-gray-200">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-10 border border-gray-200 dark:border-gray-700">
                   <Link
                     href="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Mi Perfil
                   </Link>
                   <Link
                     href="/settings"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Configuración
                   </Link>
-                  <hr className="my-1" />
+                  <hr className="my-1 dark:border-gray-700" />
                   <button
                     onClick={handleSignOut}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     Cerrar Sesión
                   </button>
@@ -140,10 +146,11 @@ export function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-lg text-gray-700 hover:bg-gray-100"
+              className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <svg
                 className="w-6 h-6"
@@ -169,8 +176,8 @@ export function Navbar() {
                 href="/dashboard"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   isActive('/dashboard')
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -181,8 +188,8 @@ export function Navbar() {
                 href="/sessions"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   isActive('/sessions')
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -194,8 +201,8 @@ export function Navbar() {
                   href="/host/create"
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     isActive('/host/create')
-                      ? 'bg-accent-100 text-accent-700'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-accent-100 dark:bg-accent-900 text-accent-700 dark:text-accent-300'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -207,8 +214,8 @@ export function Navbar() {
                 href="/wallet"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   isActive('/wallet')
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -219,19 +226,19 @@ export function Navbar() {
                 href="/history"
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   isActive('/history')
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Historial
               </Link>
 
-              <hr className="my-2" />
+              <hr className="my-2 dark:border-gray-700" />
 
               <Link
                 href="/profile"
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Mi Perfil
@@ -239,7 +246,7 @@ export function Navbar() {
 
               <Link
                 href="/settings"
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Configuración
@@ -247,7 +254,7 @@ export function Navbar() {
 
               <button
                 onClick={handleSignOut}
-                className="px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-lg"
+                className="px-4 py-2 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
               >
                 Cerrar Sesión
               </button>
