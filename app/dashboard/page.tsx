@@ -51,8 +51,21 @@ export default async function DashboardPage() {
     <div className="px-4 py-8 sm:px-6 lg:px-8">
       {/* Welcome Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Bienvenido, {session.user.name}</p>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Bienvenido, {session.user.name}</p>
+          </div>
+          <Link
+            href="/play/demo"
+            className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+            </svg>
+            Modo Práctica
+          </Link>
+        </div>
       </div>
         {/* Balance Card */}
         <div className="bg-gradient-to-r from-primary-600 to-accent-600 rounded-lg shadow-lg p-6 text-white mb-8">
