@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getUserBalance } from '@/lib/wallet-utils'
 
+// Marcar como ruta dinámica (no estática)
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)

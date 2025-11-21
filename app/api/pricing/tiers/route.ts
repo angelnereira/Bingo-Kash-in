@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { TIER_PRICING, getPricingOptionsForTier, getPricingRecommendations } from '@/lib/pricing-utils'
 import { SessionTier } from '@prisma/client'
 
+// Marcar como ruta dinámica (no estática)
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/pricing/tiers
  * Retorna información sobre todos los tiers de precios disponibles
