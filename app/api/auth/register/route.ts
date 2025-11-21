@@ -35,13 +35,20 @@ export async function POST(request: Request) {
     // Hash de la contraseña
     const hashedPassword = await hash(password, 12)
 
+    // Preparar datos del usuario, omitiendo username si no se envía
+    const userData: any = {
+      email,
+      password: hashedPassword,
+      name,
+    }
+    if (username) {
+      userData.username = username
+    }
+
     // Crear usuario y billetera
     const user = await prisma.user.create({
       data: {
-        email,
-        password: hashedPassword,
-        name,
-        username,
+        ...userData,
         wallet: {
           create: {},
         },
@@ -70,7 +77,7 @@ export async function POST(request: Request) {
 
     console.error('Error en registro:', error)
     return NextResponse.json(
-      { error: 'Error al crear usuario' },
+      { error: error instanceof Error ? error.message : 'Error al crear usuario' },
       { status: 500 }
     )
   }
