@@ -48,35 +48,12 @@ export default async function DashboardPage() {
   const lockedBalance = wallet?.lockedBalance.toNumber() || 0
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600 mt-1">Bienvenido, {session.user.name}</p>
-          </div>
-          <div className="flex gap-4">
-            {(session.user.role === 'HOST' || session.user.role === 'ADMIN') && (
-              <Link
-                href="/host/create"
-                className="px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition-colors"
-              >
-                Crear Sesión
-              </Link>
-            )}
-            <Link
-              href="/wallet"
-              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-            >
-              Billetera
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div className="px-4 py-8 sm:px-6 lg:px-8">
+      {/* Welcome Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-1">Bienvenido, {session.user.name}</p>
+      </div>
         {/* Balance Card */}
         <div className="bg-gradient-to-r from-primary-600 to-accent-600 rounded-lg shadow-lg p-6 text-white mb-8">
           <h2 className="text-xl font-semibold mb-4">Tu Billetera</h2>
@@ -167,7 +144,6 @@ export default async function DashboardPage() {
             </div>
           )}
         </div>
-      </main>
     </div>
   )
 }
