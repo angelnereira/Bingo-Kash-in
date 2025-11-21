@@ -1,5 +1,5 @@
 import { PrismaClient, ChallengeType, TournamentStatus } from '@prisma/client'
-import prisma from './prisma'
+import { prisma } from './prisma'
 
 // ============================================
 // SISTEMA DE LEADERBOARDS

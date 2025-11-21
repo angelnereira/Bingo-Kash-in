@@ -1,5 +1,5 @@
 import { PrismaClient, AchievementCategory } from '@prisma/client'
-import prisma from './prisma'
+import { prisma } from './prisma'
 
 // ============================================
 // SISTEMA DE NIVELES Y EXPERIENCIA
